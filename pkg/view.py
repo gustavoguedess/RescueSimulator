@@ -1,140 +1,77 @@
-# -*- coding: cp1252 -*-
-import pygame, time, math, sys
+import pygame
 from pygame.locals import *
-
-
-class View:
-    """Desenha o ambiente (o que est· representado no Model) em formato texto."""
+class View():
+    """View implementa a visualiza√ß√£o do ambiente.
+    """
     def __init__(self, model):
+        """Construtor da classe View
+        @param model: refer√™ncia para o modelo do ambiente
+        """
+        pygame.init()
+        
         self.model = model
-        ##Define a posicao do agente
-        self.posRob = None
+        
+        self.color_white = (255, 255, 255)
+        self.color_gray = (200, 200, 200)
+        self.color_black = (0, 0, 0)
+        
+        self.font_size = 20
+        self.font = pygame.font.SysFont("dejavusans", self.font_size)
 
-        ## Desvio utilizado para dar espaco para colocar a numeracao no grid
-        self.desv = 50
+        self.model_size = 750
+        self.footer_size = 20
 
-        ## Tamanho dos quadrados
-        self.square_size = 50
+        self.block_size = self.model_size / self.model.rows
+        self.width = self.model.columns * self.block_size
+        self.height = self.model.rows * self.block_size+self.footer_size
 
-        ##Inicia os mÛdulos do PYGAME
-        pygame.init() 
-
-        ## Define a largura e a altura da tela
-        self.largura = 900
-        self.altura = 600
-        ## Cria a tela, somando 300 na largura para colocar a parte de mostrar a saida
-        #self.window = pygame.display.set_mode((self.largura + 300, self.altura)) ##Cria uma tela.. X e Y
-        self.window = pygame.display.set_mode((self.largura, self.altura)) ##Cria uma tela.. X e Y
-
-        pygame.display.set_caption("Robo Fun Simulator")##Nomeia a Janela
-        self.tela = pygame.display.get_surface()##)
-        self.cor_branca = (255, 255, 255)
-        self.cor_preta = (0, 0, 0)
-        self.cor_cinza = (128,128,128)
-        self.window.fill(self.cor_branca)
+        self.window = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption("Rescue Simulator")
+        self.surface = pygame.display.get_surface()
+        self.window.fill(self.color_white)
         pygame.display.flip()
         pygame.display.update()
-        
-        ##Imagens utilizadas
-        self.log = pygame.image.load('img/log.png').convert_alpha()
-        self.log = pygame.transform.scale(self.log, (299, 550))
 
-
-        ## Variavel para permitir construir a parte estatica do ambiente uma unica vez
-        self.strutucteGenerate = False
-
-        ## Variavel que guarda uma instancia do labirinto
-        self.board = False
-
-        """
-        O funcionamento consiste em duas partes:
-            1∞ -> Construcao do ambiente. O usuario clica no bloco define o que vai ter nele;
-            2∞ -> Depois que o usu·rio apertar a tecla ENTER, comeca a execucao do programa.
-        """
-        #self.step = "build"
-        self.step ="notbuild"
-
-    ## Metodo que retorna a screen criada para o pygame
-    def getScreen(self):
-        return self.tela
-    
-    ## Metodo que seta o labirinto
-    def setBoard(self, board):
-        self.board = board
-        
-    ## Metodo usado para construir a parte estatica do ambiente
-    def drawStructure(self):
-        self.board.show()
-
-    ## Metodo que retorna o step atual (build ou deliberate)
-    def getStep(self):
-        return self.step
-
-    ## Metodo que desenha a estrutura do labirinto, e executa no step build
-    def drawToBuild(self):
-        ## Verifica se a parte estatisca ja foi desenhada, caso nao, constroi e nao precisa mais chamar
-        if self.strutucteGenerate == False:
-            self.drawStructure()
-            self.strutucteGenerate = True
-
-        redraw = True   
-        for event in pygame.event.get():
-            ## Verifica se foi apertada a tecla ENTER. Se caso sim, passa para a proxima etapa
-            if event.type==pygame.KEYDOWN:
-                if event.key==pygame.K_RETURN:
-                    self.step = "deliberate"
-                if event.key==pygame.K_s:
-                    self.board.save()
-                    
-            ## Verifica se foi clicado em um bloco 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                redraw = self.board.checkClick(pygame.mouse.get_pos())
-                if redraw:
-                    self.window.fill((255, 255, 255))
-                    self.board.show()
-                        
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()  
-        pygame.display.update()
-
-    ## Metodo para desenhar na tela, e usado durante o step deliberate     
     def draw(self):
-        ## Limpa as mensagens do robo
-        #self.tela.blit(self.log, (self.largura, 5))
-        ## Apaga a posicao antiga do robo
-        if self.posRob != None:
-            self.board.listPlaces[self.posRob[0]][self.posRob[1]].setAgent(False)
-            self.board.listPlaces[self.posRob[0]][self.posRob[1]].show()
-            
-        ## Desenha o robo na nova posicao, e mostra a mensagem do robo no lado
-        self.board.listPlaces[self.model.agentPos[0]][self.model.agentPos[1]].setAgent(True)
-        self.board.listPlaces[self.model.agentPos[0]][self.model.agentPos[1]].show()
-        self.posRob = (self.model.agentPos[0], self.model.agentPos[1])
+        """Desenha o labirinto na tela
+        """
+        """
+        print("Labirinto:")
+        for row in range(self.model.rows):
+            for column in range(self.model.columns):
+                print("*", end="")
+            print("")
+        """
+        for row in range(self.model.rows):
+            for column in range(self.model.columns):
+                block = self.model.blocks[row][column]
+                self.drawBlock(block)
+        
+        #draw footer
+        self.drawFooter("Rescue Simulator")
 
-        ## Desenha a fala do robo na lateral
-        #txt = "Estou em (x, y): " + str(self.model.agentPos[1]) + ", " + str(self.model.agentPos[0]) +  " Cambio..."
-        #fonte=pygame.font.SysFont("Times New Roman", 20, False, False)           ##### usa a fonte padr„o
-        #txttela = fonte.render(txt, 0, (0,0,0))  ##### renderiza o texto na cor desejada
-        #self.tela.blit(txttela,(self.largura+6, 170))
-
-        ##Desenha o objetivo
-        self.board.listPlaces[self.model.goalPos[0]][self.model.goalPos[1]].setGoal(True)
-        self.board.listPlaces[self.model.goalPos[0]][self.model.goalPos[1]].show()
-
-        ## Verifica se o robo chegou no lugar, e se sim, mostra uma mensagem diferente
-        # if self.model.goalPos[0] == self.model.agentPos[0] and self.model.goalPos[1] == self.model.agentPos[1]:
-            # self.tela.blit(self.log, (self.largura, 5))
-           
-            #txt = "UFA.... Finalmente cheguei!"
-            #fonte=pygame.font.SysFont("Times New Roman", 20, False, False)           ##### usa a fonte padr„o
-            #txttela = fonte.render(txt, 0, (0,0,0))  ##### renderiza o texto na cor desejada
-            #self.tela.blit(txttela,(self.largura+6, 170))
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-       
         pygame.display.update()
 
+    def drawFooter(self, text):
+        """Desenha o rodap√© na tela
+        @param text: texto a ser desenhado
+        """
+        pygame.draw.rect(self.surface, self.color_gray, (0, self.height-self.footer_size, self.width, self.footer_size))
+        text = self.font.render(text, True, self.color_black)
+        self.surface.blit(text, (0, self.model.rows * self.block_size), )
+
+    def drawBlock(self, block):
+        """Desenha um bloco na tela
+        @param block: bloco a ser desenhado
+        """
+        pygame.draw.rect(self.surface, block.color, (block.x * self.block_size, block.y * self.block_size, self.block_size, self.block_size))
+         
+    def drawSquare(self, x, y, color):
+        """Desenha um quadrado na tela
+        @param x: posi√ß√£o x do quadrado
+        @param y: posi√ß√£o y do quadrado
+        @param color: cor do quadrado
+        """
+        pygame.draw.rect(self.surface, color, (x, y, self.block_size, self.block_size))
+        pygame.display.update()
+    
