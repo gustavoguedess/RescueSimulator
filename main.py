@@ -36,17 +36,18 @@ def main():
     ## Inicializa o labirinto
     configDict = getConfig()
     print("dicionario config: ", configDict)
-    model = Model(configDict["maxLin"], configDict["maxCol"])
+    model = Model(configDict)
 
     ## Construa o labirinto
     filename=os.path.join("config_data","ambiente.txt")
     model.generateMap(filename)
     model.draw()
-
-    while(model.agent.deliberate()!=-1):
+    #time.sleep(3)
+    while(model.update()):
         model.draw()
-        time.sleep(1)
+        time.sleep(0.1)
+        print()
     model.draw()
-
+    
 if __name__ == '__main__':
     main()

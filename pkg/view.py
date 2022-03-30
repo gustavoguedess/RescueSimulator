@@ -65,8 +65,15 @@ class View():
         """Desenha um bloco na tela
         @param block: bloco a ser desenhado
         """
-        pygame.draw.rect(self.surface, block.color, (block.x * self.block_size, block.y * self.block_size, self.block_size, self.block_size))
+        pygame.draw.rect(self.surface, self.getColorBlock(block), (block.x * self.block_size, block.y * self.block_size, self.block_size, self.block_size))
          
+    def getColorBlock(self, block):
+        """Retorna a cor de um bloco
+        @param block: bloco a ser desenhado
+        """
+        if not self.model.agent.visited[block.y][block.x]: 
+            return tuple(c/2 for c in block.color)
+        return block.color
     def drawSquare(self, x, y, color):
         """Desenha um quadrado na tela
         @param x: posição x do quadrado
