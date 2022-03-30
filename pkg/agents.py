@@ -1,12 +1,12 @@
 from block import Block
 
-class AgentV(Block):
+class AgentS(Block):
     """
     AgentV: Agente Vasculhador 
     """
 
     def __init__(self, x, y, rows, columns):
-        super().__init__(x, y, "agentv")
+        super().__init__(x, y, "agents")
         self.x_base = x
         self.y_base = y
         self.rows = rows
@@ -40,30 +40,8 @@ class AgentV(Block):
             self.y += 1
 
     def deliberate(self):
-        #Caso não tenha um plano, cria um plano.  
-        if not self.plan:
-            # Retorna a coordenada não visitada mais próxima
-            x, y = self.dfs()
-
-            # Se tiver coordenada não visitada, cria um plano para chegar nela
-            if x is not None and y is not None:
-                self.plan = self.makePlan(x, y)
-            # Senão o plano é voltar para a base
-            elif self.notInBase():
-                self.plan = self.makePlan(self.x_base, self.y_base)
-            else:
-                return False
-        # Salva a posição atual
-        self.last_position = (self.x, self.y)
-
-        # Move para a próxima coordenada do plano
-        self.x, self.y = self.plan.pop(0)
-        print('Agente Vasculhador delibera:', self.x, self.y)
-
-        # Marca a coordenada como visitada
-        self.visitme()
         
-        return True
+        return False
 
     def directionCoord(self, direction):
         if direction == "N":   return self.x, self.y-1
@@ -133,9 +111,6 @@ class AgentV(Block):
         @param y: coordenada y
         """
         return x >= 0 and x < self.rows and y >= 0 and y < self.columns
-
-    def notInBase(self):
-        return self.x != self.x_base or self.y != self.y_base
 
     def __str__(self):
         return f"Agente ({self.x}, {self.y})"

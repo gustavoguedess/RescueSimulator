@@ -47,7 +47,7 @@ class View():
                 block = self.model.blocks[row][column]
                 self.drawBlock(block)
         
-        self.drawBlock(self.model.agent)
+        self.drawBlock(self.model.getAgent())
         #draw footer
         self.drawFooter("Rescue Simulator")
 
@@ -71,7 +71,7 @@ class View():
         """Retorna a cor de um bloco
         @param block: bloco a ser desenhado
         """
-        if not self.model.agent.visited[block.y][block.x]: 
+        if not self.model.agentV.visited[block.y][block.x]: 
             return tuple(c/2 for c in block.color)
         return block.color
     def drawSquare(self, x, y, color):
