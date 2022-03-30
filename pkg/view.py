@@ -47,6 +47,7 @@ class View():
                 block = self.model.blocks[row][column]
                 self.drawBlock(block)
         
+        self.drawBlock(self.model.agent)
         #draw footer
         self.drawFooter("Rescue Simulator")
 

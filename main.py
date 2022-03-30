@@ -41,10 +41,12 @@ def main():
     ## Construa o labirinto
     filename=os.path.join("config_data","ambiente.txt")
     model.generateMap(filename)
-
     model.draw()
-    time.sleep(5)
 
+    while(model.agent.deliberate()!=-1):
+        model.draw()
+        time.sleep(1)
+    model.draw()
 
 if __name__ == '__main__':
     main()

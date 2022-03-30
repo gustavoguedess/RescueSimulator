@@ -1,5 +1,6 @@
 from view import View 
 from block import Block
+from agentv import AgentV
 
 class Model:
     """Model é o modelo do ambiente. Implementa um ambiente na forma de um labirinto com paredes, agentes e vítimas.
@@ -15,7 +16,9 @@ class Model:
     
         self.view = View(self)
         self.blocks = [[Block(x, y) for x in range(columns)] for y in range(rows)]
-    
+        self.agent = None
+        self.victim = []
+        
     def checkValidCoord(self, x, y):
         """Verifica se uma coordenada é válida
         @param x: coordenada x
@@ -23,12 +26,9 @@ class Model:
         """
         return x >= 0 and x < self.rows and y >= 0 and y < self.columns
 
-    def setAgent(self, x, y):
-        if self.checkValidCoord(x, y):
-            self.blocks[x][y].setCategory("agent")
-        else:
-            print("Erro: coordenada inválida")
-    
+    def setAgent(self, x,y):
+        self.agent = AgentV(x, y)
+
     def setVictim(self, x, y):
         if self.checkValidCoord(x, y):
             self.blocks[x][y].setCategory("victim")
