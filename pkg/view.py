@@ -47,9 +47,10 @@ class View():
                 block = self.model.blocks[row][column]
                 self.drawBlock(block)
         
-        self.drawBlock(self.model.getAgent())
+        if self.model.status != "fim":
+            self.drawBlock(self.model.getAgent())
         #draw footer
-        self.drawFooter("Rescue Simulator")
+        self.drawFooter(str(self.model))
 
         pygame.display.update()
 
@@ -72,8 +73,9 @@ class View():
         @param block: bloco a ser desenhado
         """
         if not self.model.agentV.visited[block.y][block.x]: 
-            return tuple(c/2 for c in block.color)
+            return tuple(c/5 for c in block.color)
         return block.color
+
     def drawSquare(self, x, y, color):
         """Desenha um quadrado na tela
         @param x: posição x do quadrado

@@ -58,7 +58,6 @@ class AgentV(Block):
 
         # Move para a próxima coordenada do plano
         self.x, self.y = self.plan.pop(0)
-        print('Agente Vasculhador delibera:', self.x, self.y)
 
         # Marca a coordenada como visitada
         self.visitme()

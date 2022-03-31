@@ -36,10 +36,12 @@ class Model:
 
     def setAgent(self, x,y):
         self.agentV = AgentV(x, y, self.rows, self.columns)
-        self.agentS = AgentS(x, y, self.rows, self.columns)
+        self.agentS = AgentS(x, y, self.rows, self.columns, self.Bs, self.Ks)
+
     def setVictim(self, x, y):
         if self.checkValidCoord(x, y):
             self.blocks[y][x].setCategory("victim")
+            self.victim.append((x,y))
         else:
             print("Erro: coordenada inválida")
 
@@ -81,8 +83,11 @@ class Model:
         """
         print("Vasculhador está atualizando")
         running = self.agentV.deliberate()
+        print("Vasculhador delibera:", self.agentV.x, ",", self.agentV.y)
         if not running:
+            print("Vasculhador finalizou seu Trabalho")
             self.status = "socorrista"
+            self.agentS.makePlan(self.victim)
             return False 
 
         print("Agente Vasculhador está no bloco:", self.blocks[self.agentV.y][self.agentV.x].category)
@@ -94,9 +99,13 @@ class Model:
         """
         print("Socorrista está atualizando")
         running = self.agentS.deliberate()
+        print("Socorrista delibera:", self.agentS.x, ",", self.agentS.y)
+        time.sleep(2)
         if not running:
+            print("Socorrista finalizou seu Trabalho")
             self.status = "fim"
             return
+
     def update(self):
         """Atualiza o estado do ambiente
         """
@@ -136,3 +145,13 @@ class Model:
             return self.agentV
         elif self.status == "socorrista":
             return self.agentS
+    
+    def __str__(self):
+        """Retorna informações do agente atual e suas coordenadas
+        """
+        if self.status == "vasculhador":
+            return f"Agente Vasculhador está no bloco: ({str(self.agentV.x)}, {str(self.agentV.y)} )"
+        elif self.status == "socorrista":
+            return f"Agente Socorrista está no bloco: ({str(self.agentS.x)}, {str(self.agentS.y)} )"
+        else:
+            return "Fim"
