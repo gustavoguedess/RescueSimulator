@@ -43,9 +43,12 @@ def main():
     model.generateMap(filename)
     model.draw()
     #time.sleep(3)
+    
     while(model.update()):
         model.draw()
-        time.sleep(0.1)
+        time.sleep(0.05)
+        if model.agentV.battery<=20:
+            time.sleep(0.01)
         print()
     model.draw()
     

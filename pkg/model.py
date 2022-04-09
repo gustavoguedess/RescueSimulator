@@ -15,7 +15,7 @@ class Model:
         """
         self.rows = config_file['maxLin']
         self.columns = config_file['maxCol']
-        self.Tl = config_file['Tl']
+        self.Tv = config_file['Tv']
         self.Ts = config_file['Ts']
         self.Bv = config_file['Bv']
         self.Bs = config_file['Bs']
@@ -24,9 +24,63 @@ class Model:
         self.view = View(self)
         self.blocks = [[Block(x, y) for x in range(self.columns)] for y in range(self.rows)]
         self.agentV = None
+        self.agentS = None
         self.victim = []
 
-        self.status = "vasculhador"        
+        self.status = "comeco"    
+
+    def update(self):
+        """Atualiza o estado do ambiente"""
+        if self.status == "comeco":
+            self.prepare_agentV()
+            self.status = "vasculhador"
+
+        elif self.status == "vasculhador":
+            running = self.updateVasculhador()
+            if not running:
+                self.prepare_agentS()
+                self.status = "socorrista"
+        
+        elif self.status == "socorrista":
+            running = self.updateSocorrista()
+            if not running:
+                self.status = "fim"
+
+        elif self.status == "fim":
+            return False
+        return True
+
+    def updateVasculhador(self):
+        """Atualiza o estado do ambiente para o estado do vasculhador"""
+        action = self.agentV.deliberate()
+        if self.agentCollision(self.agentV):
+            self.agentV.comebackWall()
+        if self.foundVictim(self.agentV) and not action=='V':
+            self.agentV.foundVictim()
+
+        
+        print(f"Vasculhador delibera: {self.agentV.x}, {self.agentV.y}")
+        print(f"Ação: {action}")
+        print(f"Bloco: {self.blocks[self.agentV.y][self.agentV.x].category}")
+        if action: return True
+        return False
+
+    def updateSocorrista(self):
+        """Atualiza o estado do ambiente para o estado do socorrista"""
+        running = self.agentS.deliberate()
+
+        print("Socorrista delibera:", self.agentS.x, ",", self.agentS.y)
+
+        return running
+
+    def prepare_agentV(self):
+        """Prepara o agente vasculhador para o estado inicial"""
+        self.agentV = AgentV(self.base_x, self.base_y, self.rows, self.columns, self.Bv, self.Tv)
+
+    def prepare_agentS(self):
+        """Prepara o agente socorrista para o estado inicial"""
+        self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns)
+
     def checkValidCoord(self, x, y):
         """Verifica se uma coordenada é válida
         @param x: coordenada x
@@ -34,10 +88,10 @@ class Model:
         """
         return x >= 0 and x < self.rows and y >= 0 and y < self.columns
 
-    def setAgent(self, x,y):
-        self.agentV = AgentV(x, y, self.rows, self.columns)
-        self.agentS = AgentS(x, y, self.rows, self.columns, self.Bs, self.Ks)
-
+    def setBase(self, x,y):
+        self.base_x = x
+        self.base_y = y
+        
     def setVictim(self, x, y):
         if self.checkValidCoord(x, y):
             self.blocks[y][x].setCategory("victim")
@@ -68,7 +122,7 @@ class Model:
                 y = int(coord[1])
 
                 if line[0] == 'Agente':
-                    self.setAgent(x, y)
+                    self.setBase(x, y)
                 elif line[0] == 'Parede':
                     self.setWall(x, y)
                 elif line[0] == 'Vitima':
@@ -78,50 +132,14 @@ class Model:
                     return False
         return True
 
-    def updateVasculhador(self):
-        """Atualiza o estado do ambiente para o estado do vasculhador
-        """
-        print("Vasculhador está atualizando")
-        running = self.agentV.deliberate()
-        print("Vasculhador delibera:", self.agentV.x, ",", self.agentV.y)
-        if not running:
-            print("Vasculhador finalizou seu Trabalho")
-            self.status = "socorrista"
-            self.agentS.makePlan(self.victim)
-            return False 
-
-        print("Agente Vasculhador está no bloco:", self.blocks[self.agentV.y][self.agentV.x].category)
-        if self.agentCollision(self.agentV):
-            self.agentV.comeback()
-
-    def updateSocorrista(self):
-        """Atualiza o estado do ambiente para o estado do socorrista
-        """
-        print("Socorrista está atualizando")
-        running = self.agentS.deliberate()
-        print("Socorrista delibera:", self.agentS.x, ",", self.agentS.y)
-        time.sleep(2)
-        if not running:
-            print("Socorrista finalizou seu Trabalho")
-            self.status = "fim"
-            return
-
-    def update(self):
-        """Atualiza o estado do ambiente
-        """
-
-        if self.status == "vasculhador":
-            self.updateVasculhador()
-        elif self.status == "socorrista":
-            self.updateSocorrista()
-        elif self.status == "fim":
-            return False
-        return True
-
     ## Desenha o labirinto na tela
     def draw(self):
         self.view.draw()
     
+    def foundVictim(self, agent):
+        """Verifica se o agente encontrou a vítima
+        """
+        return self.blocks[agent.y][agent.x].category == "victim"
     def agentCollision(self, agent):
         """Verifica se houve colisão entre agente e parede
         """
@@ -132,14 +150,6 @@ class Model:
         else:
             return False
 
-    def printWallCoords(self):
-        """Imprime as coordenadas das paredes
-        """
-        for i in range(self.rows):
-            for j in range(self.columns):
-                if self.blocks[i][j].category == "wall":
-                    print("(", i, ",", j, ")")
-    
     def getAgent(self):
         if self.status == "vasculhador":
             return self.agentV
@@ -149,9 +159,11 @@ class Model:
     def __str__(self):
         """Retorna informações do agente atual e suas coordenadas
         """
+        if self.status == "comeco":
+            return "Mapa construído! Preparando nosso agente vasculhador..."
         if self.status == "vasculhador":
-            return f"Agente Vasculhador está no bloco: ({str(self.agentV.x)}, {str(self.agentV.y)} )"
+            return f"Agente Vasculhador: ({str(self.agentV.x)}, {str(self.agentV.y)})   Tempo Restante: {str(self.agentV.time)} m    Bateria: {str(self.agentV.battery)} un"
         elif self.status == "socorrista":
-            return f"Agente Socorrista está no bloco: ({str(self.agentS.x)}, {str(self.agentS.y)} )"
+            return f"Agente Socorrista: ({str(self.agentS.x)}, {str(self.agentS.y)})... A DEFINIR"
         else:
             return "Fim"

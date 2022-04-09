@@ -47,7 +47,7 @@ class View():
                 block = self.model.blocks[row][column]
                 self.drawBlock(block)
         
-        if self.model.status != "fim":
+        if self.model.status == "vasculhador" or self.model.status == "socorrista":
             self.drawBlock(self.model.getAgent())
         #draw footer
         self.drawFooter(str(self.model))
@@ -72,6 +72,8 @@ class View():
         """Retorna a cor de um bloco
         @param block: bloco a ser desenhado
         """
+        if self.model.agentV is None:
+            return block.color
         if not self.model.agentV.visited[block.y][block.x]: 
             return tuple(c/5 for c in block.color)
         return block.color
