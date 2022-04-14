@@ -88,7 +88,9 @@ class Model:
 
         print("Socorrista posição:", self.agentS.x, self.agentS.y)
         print("Delibera:", action)
-        
+        print("Vítimas socorridas:", self.agentS.get_rescued())
+        print()
+
         if action: return True
         return False
 
@@ -101,6 +103,8 @@ class Model:
         self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Bs, self.Ks)
         self.agentS.set_maze(maze)
         self.agentS.set_victim(victims)
+        self.agentS.makeCompleteGraph()
+
 
     def checkValidCoord(self, x, y):
         """Verifica se uma coordenada é válida
@@ -244,5 +248,5 @@ class Model:
         with open('victim.txt', 'r') as f:
             victims = []
             for line in f.readlines():
-                victims.append(list(map(int, line.split(','))))
+                victims.append(tuple(map(int, line.split(','))))
         return maze, victims
