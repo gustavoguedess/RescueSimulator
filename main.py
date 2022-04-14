@@ -16,8 +16,8 @@ def buildMaze(model):
     ## Atualiza o labirinto
     model.updateMaze()
 
-def getConfig():
-    arq = open(os.path.join("config_data","config.txt"),"r")
+def getConfig(filename):
+    arq = open(os.path.join(filename),"r")
     configDict = {} 
     for line in arq:
         ## O formato de cada linha é:var=valor
@@ -32,24 +32,40 @@ def getConfig():
 
     return configDict
 
+def get_args():
+    """
+    Parse the command line arguments
+    """
+    import argparse
+    parser = argparse.ArgumentParser(description="Maze Rescue")
+    parser.add_argument("-i -c", "--input_config", help="Input config", default="config_data/config.txt")
+    parser.add_argument("-a", "--ambiente", help="Input 'ambiente' config", default="config_data/ambiente.txt")
+    parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
+    args = parser.parse_args()
+    return args
+
 def main():
+
+    args = get_args()
+    print(args.debug)
+
     ## Inicializa o labirinto
-    configDict = getConfig()
+    configDict = getConfig(args.input_config)
     print("dicionario config: ", configDict)
-    model = Model(configDict)
+    model = Model(configDict, debug=args.debug)
 
     ## Construa o labirinto
-    filename=os.path.join("config_data","ambiente.txt")
+    filename=os.path.join(args.ambiente)
     model.generateMap(filename)
     model.draw()
     #time.sleep(3)
     
-    while(model.update()):
+    running = True
+    while running:
+        running = model.update()
         model.draw()
-        time.sleep(0.05)
-        if model.agentV.battery<=20:
-            time.sleep(0.01)
-        print()
+        time.sleep(model.time_sleep)
+
     model.draw()
     
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ import time
 class Model:
     """Model é o modelo do ambiente. Implementa um ambiente na forma de um labirinto com paredes, agentes e vítimas.
     """
-    def __init__(self, config_file):
+    def __init__(self, config_file, debug=False):
         
         """Construtor de modelo do ambiente físico (labirinto)
         @param rows: número de linhas do labirinto
@@ -27,27 +27,38 @@ class Model:
         self.agentS = None
         self.victim = []
 
-        self.status = "comeco"    
+        self.status = "comeco"   
+        self.paused = False
+        self.time_sleep = 0.1
+
+        self.debug = debug
 
     def update(self):
         """Atualiza o estado do ambiente"""
-        if self.status == "comeco":
-            self.prepare_agentV()
-            self.status = "vasculhador"
 
-        elif self.status == "vasculhador":
-            running = self.updateVasculhador()
-            if not running:
-                self.prepare_agentS()
-                self.status = "socorrista"
-        
-        elif self.status == "socorrista":
-            running = self.updateSocorrista()
-            if not running:
-                self.status = "fim"
+        if self.paused == False:
+            if self.status == "comeco":
+                self.prepare_agentV()
+                self.status = "vasculhador"
 
-        elif self.status == "fim":
+            elif self.status == "vasculhador":
+                running = self.updateVasculhador()
+                if not running:
+                    self.prepare_agentS()
+                    self.status = "socorrista"
+            
+            elif self.status == "socorrista":
+                running = self.updateSocorrista()
+                if not running:
+                    self.status = "fim"
+
+            elif self.status == "fim":
+                return False
+
+        running = self.check_events()
+        if running == False:
             return False
+        
         return True
 
     def updateVasculhador(self):
@@ -58,10 +69,10 @@ class Model:
         if self.foundVictim(self.agentV) and not action=='V':
             self.agentV.foundVictim()
 
-        
         print(f"Vasculhador delibera: {self.agentV.x}, {self.agentV.y}")
         print(f"Ação: {action}")
         print(f"Bloco: {self.blocks[self.agentV.y][self.agentV.x].category}")
+        print()
         if action: return True
         return False
 
@@ -79,7 +90,7 @@ class Model:
 
     def prepare_agentS(self):
         """Prepara o agente socorrista para o estado inicial"""
-        self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns)
+        self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Bs, self.Ks)
 
     def checkValidCoord(self, x, y):
         """Verifica se uma coordenada é válida
@@ -134,7 +145,7 @@ class Model:
 
     ## Desenha o labirinto na tela
     def draw(self):
-        self.view.draw()
+        self.view.draw(debug = self.debug)
     
     def foundVictim(self, agent):
         """Verifica se o agente encontrou a vítima
@@ -167,3 +178,31 @@ class Model:
             return f"Agente Socorrista: ({str(self.agentS.x)}, {str(self.agentS.y)})... A DEFINIR"
         else:
             return "Fim"
+
+    def setTimeSleep(self, time):
+        self.time_sleep = time
+    def getTimeSleep(self):
+        return self.time_sleep
+
+    def check_events(self):
+        event = None
+        for event in self.view.keyboard_event():
+            if event == 'pause':
+                if self.paused:
+                    self.paused = False
+                    print("Resume")
+                else:
+                    self.paused = True
+                    print("Pause")
+            if event == '-':
+                self.time_sleep *= 1.1
+                print(f"Time Sleep: {self.time_sleep}")
+            if event == '+':
+                self.time_sleep *= 0.91
+                print(f"Time Sleep: {self.time_sleep}")
+            if event == 'exit':
+                return False
+            if event == 'debug':
+                self.debug = not self.debug
+                print(f"Debug: {self.debug}")
+        return True

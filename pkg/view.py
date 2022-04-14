@@ -17,6 +17,7 @@ class View():
         
         self.font_size = 20
         self.font = pygame.font.SysFont("dejavusans", self.font_size)
+        self.font_block = pygame.font.SysFont("dejavusans", 10)
 
         self.model_size = 750
         self.footer_size = 20
@@ -32,20 +33,13 @@ class View():
         pygame.display.flip()
         pygame.display.update()
 
-    def draw(self):
+    def draw(self, debug=False):
         """Desenha o labirinto na tela
-        """
-        """
-        print("Labirinto:")
-        for row in range(self.model.rows):
-            for column in range(self.model.columns):
-                print("*", end="")
-            print("")
         """
         for row in range(self.model.rows):
             for column in range(self.model.columns):
                 block = self.model.blocks[row][column]
-                self.drawBlock(block)
+                self.drawBlock(block, debug)
         
         if self.model.status == "vasculhador" or self.model.status == "socorrista":
             self.drawBlock(self.model.getAgent())
@@ -62,11 +56,25 @@ class View():
         text = self.font.render(text, True, self.color_black)
         self.surface.blit(text, (0, self.model.rows * self.block_size), )
 
-    def drawBlock(self, block):
+    def drawBlock(self, block, debug = False):
         """Desenha um bloco na tela
         @param block: bloco a ser desenhado
         """
+        #draw text in block
         pygame.draw.rect(self.surface, self.getColorBlock(block), (block.x * self.block_size, block.y * self.block_size, self.block_size, self.block_size))
+        
+        pygame.draw.rect(self.surface, self.color_black, (block.x * self.block_size, block.y * self.block_size, self.block_size, self.block_size), width=1)
+
+        agent = self.model.agentV
+        if agent and debug:
+            cost_block_agent = agent.cost_block(block, by='agent')
+            if cost_block_agent!=-1:
+                text = self.font_block.render(str(cost_block_agent), True, self.getColorBlock(agent))
+                self.surface.blit(text, (block.x*self.block_size+1, block.y*self.block_size-1), )
+            cost_block_base = agent.cost_block(block, by='base')
+            if cost_block_base!=-1:
+                text = self.font_block.render(str(cost_block_base), True, self.color_black)
+                self.surface.blit(text, (block.x*self.block_size+self.block_size-15, block.y*self.block_size+self.block_size-12), )
          
     def getColorBlock(self, block):
         """Retorna a cor de um bloco
@@ -87,3 +95,22 @@ class View():
         pygame.draw.rect(self.surface, color, (x, y, self.block_size, self.block_size))
         pygame.display.update()
     
+    def keyboard_event(self):
+        """Retorna eventos de teclado
+        """
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    yield "pause"
+                elif event.key == pygame.K_q:
+                    yield "exit"
+                elif event.key == pygame.K_d:
+                    yield "debug"
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    yield "+"
+                if event.key == pygame.K_DOWN:
+                    yield "-"
+        yield None
