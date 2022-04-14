@@ -15,7 +15,7 @@ class View():
         self.color_gray = (200, 200, 200)
         self.color_black = (0, 0, 0)
         
-        self.font_size = 20
+        self.font_size = 15
         self.font = pygame.font.SysFont("dejavusans", self.font_size)
         self.font_block = pygame.font.SysFont("dejavusans", 10)
 
@@ -32,6 +32,8 @@ class View():
         self.window.fill(self.color_white)
         pygame.display.flip()
         pygame.display.update()
+
+        for _ in self.keyboard_event(): pass
 
     def draw(self, debug=False):
         """Desenha o labirinto na tela
@@ -54,7 +56,7 @@ class View():
         """
         pygame.draw.rect(self.surface, self.color_gray, (0, self.height-self.footer_size, self.width, self.footer_size))
         text = self.font.render(text, True, self.color_black)
-        self.surface.blit(text, (0, self.model.rows * self.block_size), )
+        self.surface.blit(text, (0, self.model.rows * self.block_size+2), )
 
     def drawBlock(self, block, debug = False):
         """Desenha um bloco na tela

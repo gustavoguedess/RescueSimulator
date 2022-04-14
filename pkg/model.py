@@ -88,7 +88,7 @@ class Model:
         """Prepara o agente vasculhador para o estado inicial"""
         self.agentV = AgentV(self.base_x, self.base_y, self.rows, self.columns, self.Bv, self.Tv)
 
-    def prepare_agentS(self):
+    def prepare_agentS(self, victims=None):
         """Prepara o agente socorrista para o estado inicial"""
         self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Bs, self.Ks)
 

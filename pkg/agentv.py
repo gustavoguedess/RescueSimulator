@@ -58,15 +58,24 @@ class AgentV(Block):
         """
             Deliberate: Decide como o agente deve se movimentar
         """
-        if self.atBase() and self.battery < self.Bv:
+        ## Recarregar
+        if self.atBase() and self.battery < self.Bv and self.checkCostTo(self.x, self.y, action='R')<=self.time:
             self.plan = ['R']
+
+        ## Analisa a vítima
         elif self.found_victim and self.checkCostTo(self.x, self.y, action='V')<=self.battery:
             self.plan = ['V']
             self.found_victim = False
+        
+        ## Cria um plano de movimento
         elif not self.plan:
             x, y = self.nearest_block(self.x, self.y)
 
-            if not self.validCoord(x, y) or self.checkCostTo(x, y)>self.battery:
+            
+            if not self.validCoord(x, y):
+                x,y = self.base_x, self.base_y
+            cost_to_goal = self.checkCostTo(x, y)
+            if cost_to_goal>self.battery or cost_to_goal>self.time:
                 x,y = self.base_x, self.base_y
             
             self.plan = self.makePlan(x, y)
@@ -105,6 +114,8 @@ class AgentV(Block):
         """ Verifica o custo em tempo de movimento para a coordenada x, y """
         if action=='A':
             return self.action_cost[action] + self.cost_to_base[y][x]
+        elif action=='R':
+            return self.action_cost[action]
         return self.cost_to_agent[y][x] + self.cost_to_base[y][x]
 
     def lee(self, x, y, walls=None):
