@@ -44,9 +44,15 @@ class Model:
             elif self.status == "vasculhador":
                 running = self.updateVasculhador()
                 if not running:
-                    self.prepare_agentS()
+                    self.save_agentV(self.agentV.get_maze(), self.agentV.get_victims())
+                    self.prepare_agentS(self.agentV.get_maze(), self.agentV.get_victims())
                     self.status = "socorrista"
             
+            elif self.status == "skip":
+                maze, victims = self.load_agentV()
+                self.prepare_agentS(maze, victims)
+                self.status = "socorrista"
+
             elif self.status == "socorrista":
                 running = self.updateSocorrista()
                 if not running:
@@ -69,8 +75,8 @@ class Model:
         if self.foundVictim(self.agentV) and not action=='V':
             self.agentV.foundVictim()
 
-        print(f"Vasculhador delibera: {self.agentV.x}, {self.agentV.y}")
-        print(f"Ação: {action}")
+        print(f"Vasculhador posicação: {self.agentV.x}, {self.agentV.y}")
+        print(f"Delibera: {action}")
         print(f"Bloco: {self.blocks[self.agentV.y][self.agentV.x].category}")
         print()
         if action: return True
@@ -78,19 +84,23 @@ class Model:
 
     def updateSocorrista(self):
         """Atualiza o estado do ambiente para o estado do socorrista"""
-        running = self.agentS.deliberate()
+        action = self.agentS.deliberate()
 
-        print("Socorrista delibera:", self.agentS.x, ",", self.agentS.y)
-
-        return running
+        print("Socorrista posição:", self.agentS.x, self.agentS.y)
+        print("Delibera:", action)
+        
+        if action: return True
+        return False
 
     def prepare_agentV(self):
         """Prepara o agente vasculhador para o estado inicial"""
         self.agentV = AgentV(self.base_x, self.base_y, self.rows, self.columns, self.Bv, self.Tv)
 
-    def prepare_agentS(self, victims=None):
+    def prepare_agentS(self, maze=None, victims=None):
         """Prepara o agente socorrista para o estado inicial"""
         self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Bs, self.Ks)
+        self.agentS.set_maze(maze)
+        self.agentS.set_victim(victims)
 
     def checkValidCoord(self, x, y):
         """Verifica se uma coordenada é válida
@@ -145,7 +155,16 @@ class Model:
 
     ## Desenha o labirinto na tela
     def draw(self):
-        self.view.draw(debug = self.debug)
+        """Desenha o labirinto na tela"""
+        if self.status == "vasculhador":
+            pov = 'V'
+        elif self.status == "socorrista":
+            pov = 'S'
+        elif self.status == "fim":
+            pov = 'S'
+        else:
+            pov = None
+        self.view.draw(debug = self.debug, pov = pov)
     
     def foundVictim(self, agent):
         """Verifica se o agente encontrou a vítima
@@ -164,7 +183,7 @@ class Model:
     def getAgent(self):
         if self.status == "vasculhador":
             return self.agentV
-        elif self.status == "socorrista":
+        elif self.status == "socorrista" or self.status == "fim":
             return self.agentS
     
     def __str__(self):
@@ -206,3 +225,24 @@ class Model:
                 self.debug = not self.debug
                 print(f"Debug: {self.debug}")
         return True
+    def save_agentV(self, maze, victims):
+        # salvar labirinto
+        with open('maze.txt', 'w') as f:
+            for line in maze:
+                f.write(' '.join(list(map(str, line))) + '\n')
+        # salvar vitimas
+        with open('victim.txt', 'w') as f:
+            for line in self.victim:
+                f.write(str(line[0]) + ',' + str(line[1]) + '\n')
+    def load_agentV(self):
+        # carregar labirinto
+        with open('maze.txt', 'r') as f:
+            maze = []
+            for line in f.readlines():
+                maze.append(list(map(int, line.split())))
+        # carregar vitimas
+        with open('victim.txt', 'r') as f:
+            victims = []
+            for line in f.readlines():
+                victims.append(list(map(int, line.split(','))))
+        return maze, victims

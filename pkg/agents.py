@@ -41,3 +41,9 @@ class AgentS(Block):
         @param y: coordenada y
         """
         return x >= 0 and x < self.rows and y >= 0 and y < self.columns
+
+    def set_maze(self, maze):
+        self.maze = maze
+    
+    def set_victim(self, victims):
+        self.victims = victims

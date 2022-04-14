@@ -52,6 +52,7 @@ class AgentV(Block):
         self.visited = [[False for x in range(columns)] for y in range(rows)]
         self.visitme()
 
+        self.victims = []
         self.found_victim = False
 
     def deliberate(self):
@@ -65,6 +66,7 @@ class AgentV(Block):
         ## Analisa a vítima
         elif self.found_victim and self.checkCostTo(self.x, self.y, action='V')<=self.battery:
             self.plan = ['V']
+            self.victims.append((self.x, self.y))
             self.found_victim = False
         
         ## Cria um plano de movimento
@@ -345,4 +347,14 @@ class AgentV(Block):
             return self.cost_to_agent[block.y][block.x]
         else:
             return self.cost_to_base[block.y][block.x]
-        
+    
+    def get_maze(self):
+        maze = [[0 for x in range(self.columns)] for y in range(self.rows)]
+        for y in range(self.rows):
+            for x in range(self.columns):
+                if self.visited[y][x] and self.direction_to_base[y][x] != "B":
+                    maze[y][x] = 1
+        return maze
+
+    def get_victims(self):
+        return self.victims

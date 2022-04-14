@@ -41,6 +41,7 @@ def get_args():
     parser.add_argument("-i -c", "--input_config", help="Input config", default="config_data/config.txt")
     parser.add_argument("-a", "--ambiente", help="Input 'ambiente' config", default="config_data/ambiente.txt")
     parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
+    parser.add_argument("-s", "--skip", help="Skip mode", action="store_false")
     args = parser.parse_args()
     return args
 
@@ -59,14 +60,17 @@ def main():
     model.generateMap(filename)
     model.draw()
     #time.sleep(3)
-    
+
+    if args.skip:
+        model.status = "skip"
+
     running = True
     while running:
         running = model.update()
         model.draw()
         time.sleep(model.time_sleep)
 
+    time.sleep(10)
     model.draw()
-    
 if __name__ == '__main__':
     main()
