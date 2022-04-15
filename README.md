@@ -1,5 +1,6 @@
 
 <h1 align="center">Rescue Simulator</h1>
+
 ![Rescue SImulator](https://github.com/gustavoguedess/RescueSimulator/blob/main/img/rescue.png?raw=true)
 
 ## Descrição de Projeto 
