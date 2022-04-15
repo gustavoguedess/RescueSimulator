@@ -44,6 +44,7 @@ class AgentS(Block):
         self.nearests = {}
         self.cost = {}
         
+        self.saveds = []
         self.plan = []
 
     def deliberate(self):
@@ -53,7 +54,7 @@ class AgentS(Block):
         # Se estiver na base, recarrega
         if origin == base and self.battery < self.Bs and self.get_cost(origin, action='R') < self.time:
             self.plan = ['R']
-        elif origin in self.victims:
+        elif origin in self.victims and origin not in self.saveds:
             self.plan = ['V']
         # Se não tiver pacotes, vai para a base
         elif not self.plan and self.packages <= 0:
@@ -110,7 +111,9 @@ class AgentS(Block):
 
     def found_victim(self):
         self.rescued += 1
-        self.victims.remove((self.x, self.y))
+        with open("rescued.txt", "a") as f:
+            f.write(f"{(self.x, self.y)}\n")
+        self.saveds.append((self.x, self.y))
 
     def updateCost(self, action):
         """ Atualiza o custo do agente """
