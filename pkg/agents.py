@@ -111,8 +111,6 @@ class AgentS(Block):
 
     def found_victim(self):
         self.rescued += 1
-        with open("rescued.txt", "a") as f:
-            f.write(f"{(self.x, self.y)}\n")
         self.saveds.append((self.x, self.y))
 
     def updateCost(self, action):
