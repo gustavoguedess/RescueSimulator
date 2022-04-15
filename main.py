@@ -42,13 +42,14 @@ def get_args():
     parser.add_argument("-a", "--ambiente", help="Input 'ambiente' config", default="config_data/ambiente.txt")
     parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
     parser.add_argument("-s", "--skip", help="Skip mode", action="store_true", default=False)
+    parser.add_argument("-t", "--time", help="Time Sleep", default=0.1, type=int)
+    parser.add_argument("-b", "--backup", help="Backup Vasculhador", action="store_true", default=False)
     args = parser.parse_args()
     return args
 
 def main():
 
     args = get_args()
-    print(args.debug)
 
     ## Inicializa o labirinto
     configDict = getConfig(args.input_config)
@@ -59,8 +60,9 @@ def main():
     filename=os.path.join(args.ambiente)
     model.generateMap(filename)
     model.draw()
-    #time.sleep(3)
-
+    model.setTimeSleep(args.time)
+    model.setBackup(args.backup)
+    
     if args.skip:
         print(args.skip)
         model.status = "skip"

@@ -13,10 +13,8 @@ class AgentV(Block):
         self.rows = rows
         self.columns = columns
 
-        self.time = 0
         self.Bv = Bv
         self.Tv = Tv
-
         self.battery = Bv
         self.time = Tv
 

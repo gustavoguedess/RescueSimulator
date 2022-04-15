@@ -32,10 +32,10 @@ class Model:
         self.time_sleep = 0.1
 
         self.debug = debug
-
+        self.backup = False
     def update(self):
         """Atualiza o estado do ambiente"""
-
+        
         if self.paused == False:
             if self.status == "comeco":
                 self.prepare_agentV()
@@ -44,7 +44,7 @@ class Model:
             elif self.status == "vasculhador":
                 running = self.updateVasculhador()
                 if not running:
-                    self.save_agentV(self.agentV.get_maze(), self.agentV.get_victims())
+                    if self.backup: self.save_agentV(self.agentV.get_maze(), self.agentV.get_victims())
                     self.prepare_agentS(self.agentV.get_maze(), self.agentV.get_victims())
                     self.status = "socorrista"
             
@@ -58,12 +58,10 @@ class Model:
                 if not running:
                     self.status = "fim"
 
-            elif self.status == "fim":
+            elif self.status == "quit":
                 return False
 
-        running = self.check_events()
-        if running == False:
-            return False
+        self.check_events()
         
         return True
 
@@ -100,7 +98,7 @@ class Model:
 
     def prepare_agentS(self, maze=None, victims=None):
         """Prepara o agente socorrista para o estado inicial"""
-        self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Bs, self.Ks)
+        self.agentS = AgentS(self.base_x, self.base_y, self.rows, self.columns, self.Ts, self.Bs, self.Ks)
         self.agentS.set_maze(maze)
         self.agentS.set_victim(victims)
         self.agentS.makeCompleteGraph()
@@ -130,6 +128,12 @@ class Model:
         else:
             print("Erro: coordenada inválida")
 
+    def setTimeSleep(self, time:int):
+        self.time_sleep = time
+
+    def setBackup(self, backup:bool):
+        self.backup = backup
+
     def generateMap(self, filename):
         """Gera um mapa de labirinto a partir de um arquivo
         @param filename: nome do arquivo
@@ -139,7 +143,6 @@ class Model:
 
         for line in lines: 
             line = line.split()
-            print(line)
 
             for coord in line[1:]:
                 coord = coord.split(',')
@@ -198,9 +201,11 @@ class Model:
         if self.status == "vasculhador":
             return f"Agente Vasculhador: ({str(self.agentV.x)}, {str(self.agentV.y)})   Tempo Restante: {str(self.agentV.time)} m    Bateria: {str(self.agentV.battery)} un"
         elif self.status == "socorrista":
-            return f"Agente Socorrista: ({str(self.agentS.x)}, {str(self.agentS.y)})... A DEFINIR"
+            return str(self.agentS)
         else:
-            return "Fim"
+            text = str(self.agentS).split('|')
+            text = '|'.join(text[1:])
+            return "Fim (press 'q' to quit) => " + text
 
     def setTimeSleep(self, time):
         self.time_sleep = time
@@ -223,12 +228,12 @@ class Model:
             if event == '+':
                 self.time_sleep *= 0.91
                 print(f"Time Sleep: {self.time_sleep}")
-            if event == 'exit':
-                return False
+            if event == 'quit':
+                self.status = 'quit'
             if event == 'debug':
                 self.debug = not self.debug
                 print(f"Debug: {self.debug}")
-        return True
+
     def save_agentV(self, maze, victims):
         # salvar labirinto
         with open('maze.txt', 'w') as f:

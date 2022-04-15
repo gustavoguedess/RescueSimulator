@@ -113,7 +113,7 @@ class View():
                 if event.key == pygame.K_SPACE:
                     yield "pause"
                 elif event.key == pygame.K_q:
-                    yield "exit"
+                    yield "quit"
                 elif event.key == pygame.K_d:
                     yield "debug"
             
