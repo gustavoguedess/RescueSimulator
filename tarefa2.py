@@ -1,4 +1,5 @@
 from posixpath import split
+from typing import get_args
 from tarefa2.agents import AgentS
 from tarefa2.agentl import AgentL
 
@@ -51,8 +52,9 @@ def print_maze(maze, victims):
             else:
                 print("#", end="")
         print()
+    print()
 
-def main():
+def main(args):
     ambiente = get_ambiente("config_data/ambiente.txt")
     config = get_config("config_data/config.txt")
     costs = get_difacesso("config_data/difacesso.txt")
@@ -65,15 +67,23 @@ def main():
     agent.make_maze()
     maze = agent.get_maze()
 
-    #maze = get_vasculhador_maze(ambiente, config)
-    
     print_maze(maze, victims)
     
     origin = ambiente['Agente'][0]
     victims = ambiente['Vitima']
 
     agent = AgentS(origin, victims, vitals, costs, config)
+    agent.random_individuals(10)
+    agent.run_gens(args.generations, log=True)
+    agent.print_performance()
 
-    agent.print_victims()
-    
-main()
+def get_args():
+    import argparse
+    parser = argparse.ArgumentParser(description='Tarefa 2')
+    parser.add_argument('-n', '-g', '--generations', type=int,
+                        help='Gerações a serem executadas', default=200)
+    args = parser.parse_args()
+    return args
+
+args = get_args()
+main(args)

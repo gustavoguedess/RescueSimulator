@@ -1,7 +1,5 @@
-maxLin=32
-maxCol=32
-Tv=1200
-Ts=2400
-Bv=1200
-Bs=2400
-Ks=32
+maxLin=20
+maxCol=20
+Tl=600
+Ts=400
+Ks=42
