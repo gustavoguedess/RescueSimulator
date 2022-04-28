@@ -1,7 +1,0 @@
-
-Classes 
-    Model (Ambiente)
-    View
-    Maze
-    Block
-    AgentV
