@@ -1,6 +1,6 @@
 from pkg.block import Block
 import random 
-from math import floor 
+from math import ceil 
 
 class AgentS(Block):
     """
@@ -231,8 +231,8 @@ class AgentS(Block):
                 vs+=1
                 ts+=self.access_time[self.victims[i]]
                 G+=self.vitals[self.victims[i]]
-                Se+=floor(self.vitals[self.victims[i]]*5) 
-            St+=floor(self.vitals[self.victims[i]]*5) 
+                Se+=ceil(self.vitals[self.victims[i]]*5) 
+            St+=ceil(self.vitals[self.victims[i]]*5) 
         
         S = vs/ts 
         Se = Se/(ts*St)
