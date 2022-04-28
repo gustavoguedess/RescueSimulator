@@ -1,4 +1,3 @@
-from locale import normalize
 from pkg.block import Block
 import random 
 from math import floor 
