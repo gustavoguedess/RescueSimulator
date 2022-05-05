@@ -73,7 +73,7 @@ def main(args):
     victims = ambiente['Vitima']
 
     agent = AgentS(origin, victims, vitals, costs, config)
-    agent.random_individuals(10)
+    agent.random_individuals(100)
     agent.run_gens(args.generations, log=True)
     agent.print_performance()
 

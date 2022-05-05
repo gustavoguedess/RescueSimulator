@@ -1,3 +1,4 @@
+from multiprocessing import parent_process
 from pkg.block import Block
 import random 
 from math import ceil 
@@ -98,19 +99,21 @@ class AgentS(Block):
         
         return descendents
     
-    def crossover(self, ind1, ind2, pCROSS):
-        div = int(len(ind1)*pCROSS)
+    def crossover(self, ind1, ind2):
+        div = random.randint(0, len(ind1))
         son1 = ind1[:div] + ind2[div:]
         son2 = ind2[:div] + ind1[div:]
         return son1, son2
 
     def recombine(self, individuals, pCROSS):
-        new_individuals = individuals
-        for i in range(len(individuals)):
-            for j in range(i+1, len(individuals)):
-                son1, son2 = self.crossover(individuals[i], individuals[j], pCROSS)
-                new_individuals.append(son1)
-                new_individuals.append(son2)
+        new_individuals = []
+    
+        for ind1 in individuals:
+            for ind2 in individuals:
+                if ind1!=ind2 and random.random() < pCROSS:
+                    son1, son2 = self.crossover(ind1, ind2)
+                    new_individuals.append(son1)
+                    new_individuals.append(son2)
         return new_individuals
 
     def mutate(self, individuals, pMUT):
@@ -147,11 +150,13 @@ class AgentS(Block):
     def genetic_algorithm_generation(self, N, R, pCROSS, pMUT):
         if R>len(self.individuals): return
         fit_norm = self.normalization(self.fitness)
-        descendents = self.russian_roulette(self.individuals, fit_norm, R)
+        parents = self.russian_roulette(self.individuals, fit_norm, R)
         # print("Descendents:")
         # self.print_individuals(descendents)
-        descendents = self.recombine(descendents, pCROSS)
+        descendents = self.recombine(parents, pCROSS)
         descendents = self.mutate(descendents, pMUT)
+
+        descendents+=parents
 
         fitness = self.calc_all_fitness(descendents)
         self.individuals, self.fitness = self.best_individuals(descendents, fitness, N)
@@ -207,7 +212,7 @@ class AgentS(Block):
         for individual in individuals:
             self.print_individual(individual)
 
-    def run_gens(self, gens, N=5, R=5, pCROSS=0.8, pMUT=0.05, log=False):
+    def run_gens(self, gens, N=100, R=100, pCROSS=0.7, pMUT=0.05, log=False):
         if log: self.print_first()
         while gens>0:
             self.genetic_algorithm_generation(N, R, pCROSS, pMUT)
